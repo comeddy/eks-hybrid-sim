@@ -1,0 +1,29 @@
+============================================================
+  Simulator Platform - {{ .Values.oemId }}/{{ .Values.userId }}
+============================================================
+
+배포가 완료되었습니다!
+
+1. 접속 URL:
+   https://{{ include "simulator-platform.fqdn" . }}
+
+2. 엔드포인트:
+   - CAN:      https://{{ include "simulator-platform.fqdn" . }}/can/
+   - Server:   https://{{ include "simulator-platform.fqdn" . }}/server/
+   - Vehicle:  https://{{ include "simulator-platform.fqdn" . }}/vehicle/
+   - Android:  https://{{ include "simulator-platform.fqdn" . }}/android/
+   - Cluster:  https://{{ include "simulator-platform.fqdn" . }}/cluster/
+
+3. Health Check:
+   curl https://{{ include "simulator-platform.fqdn" . }}/health
+
+4. Pod 상태 확인:
+   kubectl get pods -n {{ .Release.Namespace }} -l "simulator-platform/user={{ .Values.userId }}"
+
+5. 로그 확인:
+   kubectl logs -n {{ .Release.Namespace }} -l "app.kubernetes.io/component=nginx-proxy" -f
+
+============================================================
+  OEM: {{ .Values.oemId }} | User: {{ .Values.userId }}
+  ALB Group: {{ include "simulator-platform.albGroupName" . }}
+============================================================

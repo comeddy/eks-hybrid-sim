@@ -1,0 +1,64 @@
+# ============================================================
+# DEV 환경 — terraform.tfvars
+# 이 파일을 terraform.tfvars로 복사하여 실제 값을 입력하세요:
+#   cp terraform.tfvars.example terraform.tfvars
+# ============================================================
+
+aws_region       = "ap-northeast-2"
+base_domain      = "example.com"                                          # 실제 도메인으로 변경
+eks_cluster_name = "my-eks-cluster"                                       # 실제 EKS 클러스터 이름
+ecr_registry     = "<ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com"    # AWS 계정 ID 입력
+helm_chart_path  = "../../eks-simulator-helm"
+
+hybrid_node_enabled = false
+
+# ============================================================
+# OEM & User 정의
+# — OEM 추가: 블록 하나만 추가하면 ACM + Route53 + Helm 자동 생성
+# ============================================================
+oem_users = {
+
+  # ---- OEM-A ----
+  hyundai = {
+    users = {
+      user-a = {
+        simulator_server_tag = "v1.3.0"
+        simulator_can_tag    = "v1.2.0"
+      }
+      user-b = {
+        # 모두 기본값 (latest)
+      }
+      user-c = {
+        simulator_server_replicas = 2   # Server Pod 스케일아웃
+      }
+    }
+  }
+
+  # ---- OEM-B ----
+  kia = {
+    users = {
+      user-a = {
+        simulator_vehicle_tag = "v2.0.0"
+      }
+    }
+  }
+
+  # ---- 신규 OEM 추가 예시 ----
+  # toyota = {
+  #   users = {
+  #     user-a = {}
+  #   }
+  # }
+}
+
+# ============================================================
+# ALB DNS (2차 apply 시 채움)
+# ============================================================
+# 1차 apply 후 ALB가 프로비저닝되면:
+#   kubectl get ingress -A -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
+# 결과를 여기에 입력 후 terraform apply 재실행
+
+# alb_dns_overrides = {
+#   hyundai = "k8s-xxx.ap-northeast-2.elb.amazonaws.com"
+#   kia     = "k8s-yyy.ap-northeast-2.elb.amazonaws.com"
+# }

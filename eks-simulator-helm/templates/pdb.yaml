@@ -1,0 +1,43 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+# ============================================================
+# PodDisruptionBudget for Nginx Proxy
+# ============================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "simulator-platform.fullname" . }}-nginx
+  labels:
+    {{- include "simulator-platform.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- else if .Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- $ctx := dict "Values" .Values "Chart" .Chart "Release" .Release "component" "nginx-proxy" }}
+      {{- include "simulator-platform.componentSelectorLabels" $ctx | nindent 6 }}
+---
+# ============================================================
+# PodDisruptionBudget for Simulator Server (if replicas > 1)
+# ============================================================
+{{- if gt (int .Values.simulatorServer.replicas) 1 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "simulator-platform.fullname" . }}-server
+  labels:
+    {{- include "simulator-platform.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- else if .Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- $ctx := dict "Values" .Values "Chart" .Chart "Release" .Release "component" "simulator-server" }}
+      {{- include "simulator-platform.componentSelectorLabels" $ctx | nindent 6 }}
+{{- end }}
+{{- end }}

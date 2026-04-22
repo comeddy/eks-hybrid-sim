@@ -1,0 +1,131 @@
+# ============================================================
+# Nginx Proxy Service (ALB Target)
+# ============================================================
+{{- if .Values.nginxProxy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "simulator-platform.fullname" . }}-nginx
+  labels:
+    {{- $ctx := dict "Values" .Values "Chart" .Chart "Release" .Release "component" "nginx-proxy" }}
+    {{- include "simulator-platform.componentLabels" $ctx | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.nginxProxy.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "simulator-platform.componentSelectorLabels" $ctx | nindent 4 }}
+{{- end }}
+---
+# ============================================================
+# Simulator CAN Service
+# ============================================================
+{{- if .Values.simulatorCan.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "simulator-platform.fullname" . }}-can
+  labels:
+    {{- $ctx := dict "Values" .Values "Chart" .Chart "Release" .Release "component" "simulator-can" }}
+    {{- include "simulator-platform.componentLabels" $ctx | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.simulatorCan.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "simulator-platform.componentSelectorLabels" $ctx | nindent 4 }}
+{{- end }}
+---
+# ============================================================
+# Simulator Server Service
+# ============================================================
+{{- if .Values.simulatorServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "simulator-platform.fullname" . }}-server
+  labels:
+    {{- $ctx := dict "Values" .Values "Chart" .Chart "Release" .Release "component" "simulator-server" }}
+    {{- include "simulator-platform.componentLabels" $ctx | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.simulatorServer.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "simulator-platform.componentSelectorLabels" $ctx | nindent 4 }}
+{{- end }}
+---
+# ============================================================
+# Simulator Vehicle Service
+# ============================================================
+{{- if .Values.simulatorVehicle.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "simulator-platform.fullname" . }}-vehicle
+  labels:
+    {{- $ctx := dict "Values" .Values "Chart" .Chart "Release" .Release "component" "simulator-vehicle" }}
+    {{- include "simulator-platform.componentLabels" $ctx | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.simulatorVehicle.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "simulator-platform.componentSelectorLabels" $ctx | nindent 4 }}
+{{- end }}
+---
+# ============================================================
+# Target Android Service
+# ============================================================
+{{- if .Values.targetAndroid.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "simulator-platform.fullname" . }}-android
+  labels:
+    {{- $ctx := dict "Values" .Values "Chart" .Chart "Release" .Release "component" "target-android" }}
+    {{- include "simulator-platform.componentLabels" $ctx | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.targetAndroid.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "simulator-platform.componentSelectorLabels" $ctx | nindent 4 }}
+{{- end }}
+---
+# ============================================================
+# Target Cluster Service
+# ============================================================
+{{- if .Values.targetCluster.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "simulator-platform.fullname" . }}-cluster
+  labels:
+    {{- $ctx := dict "Values" .Values "Chart" .Chart "Release" .Release "component" "target-cluster" }}
+    {{- include "simulator-platform.componentLabels" $ctx | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.targetCluster.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "simulator-platform.componentSelectorLabels" $ctx | nindent 4 }}
+{{- end }}

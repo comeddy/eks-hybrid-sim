@@ -1,0 +1,60 @@
+# ============================================================
+# Example: KIA OEM - User B
+# Domain: user-b.kia.example.com
+# ============================================================
+
+userId: "user-b"
+oemId: "kia"
+
+imageRegistry: "123456789012.dkr.ecr.ap-northeast-2.amazonaws.com"
+
+ingress:
+  enabled: true
+  className: alb
+  baseDomain: "example.com"
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:ap-northeast-2:123456789012:certificate/aaaa-bbbb-cccc"
+
+hybridNode:
+  enabled: true
+  nodeSelector:
+    eks.amazonaws.com/compute-type: hybrid
+  tolerations:
+    - key: "eks.amazonaws.com/compute-type"
+      operator: "Equal"
+      value: "hybrid"
+      effect: "NoSchedule"
+
+# Component image tags - KIA specific versions
+simulatorCan:
+  enabled: true
+  image:
+    tag: "v1.4.0"
+
+simulatorServer:
+  enabled: true
+  image:
+    tag: "v1.5.0"
+  replicas: 2  # KIA requires higher availability
+
+simulatorVehicle:
+  enabled: true
+  image:
+    tag: "v1.2.0"
+
+targetAndroid:
+  enabled: true
+  image:
+    tag: "v2.1.0"
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+
+targetCluster:
+  enabled: true
+  image:
+    tag: "v1.1.0"

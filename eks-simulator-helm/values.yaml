@@ -1,0 +1,219 @@
+# ============================================================
+# Global Configuration
+# ============================================================
+# User/OEM 식별자 (Terraform에서 주입)
+userId: "user-a"
+oemId: "hyundai"
+
+# ECR 레지스트리 주소
+imageRegistry: "123456789012.dkr.ecr.ap-northeast-2.amazonaws.com"
+
+# 이미지 Pull Policy
+imagePullPolicy: IfNotPresent
+
+# ============================================================
+# Ingress / ALB Configuration
+# ============================================================
+ingress:
+  enabled: true
+  className: alb
+  baseDomain: "example.com"
+
+  annotations:
+    # ALB Controller 설정
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    # OEM별 ALB 공유를 위한 그룹 설정 (oemId로 동적 생성)
+    alb.ingress.kubernetes.io/group.name: ""  # 템플릿에서 oemId 기반으로 설정
+    alb.ingress.kubernetes.io/group.order: "100"
+    # ACM 인증서 ARN (Terraform에서 주입)
+    alb.ingress.kubernetes.io/certificate-arn: ""
+    # Health Check
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/success-codes: "200"
+
+# ============================================================
+# Hybrid Node Configuration
+# ============================================================
+hybridNode:
+  enabled: true
+  nodeSelector:
+    eks.amazonaws.com/compute-type: hybrid
+  tolerations:
+    - key: "eks.amazonaws.com/compute-type"
+      operator: "Equal"
+      value: "hybrid"
+      effect: "NoSchedule"
+
+# ============================================================
+# Common Pod Settings
+# ============================================================
+commonLabels:
+  app.kubernetes.io/part-of: simulator-platform
+  app.kubernetes.io/managed-by: helm
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# ============================================================
+# Nginx Proxy Configuration
+# ============================================================
+nginxProxy:
+  enabled: true
+  image:
+    repository: nginx
+    tag: "1.25-alpine"
+  replicas: 1
+  port: 80
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+# ============================================================
+# Simulator Components
+# ============================================================
+simulatorCan:
+  enabled: true
+  name: simulator-can
+  image:
+    repository: simulator-can
+    tag: "latest"
+  port: 8001
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+
+  env: []
+  # - name: CAN_INTERFACE
+  #   value: "vcan0"
+
+simulatorServer:
+  enabled: true
+  name: simulator-server
+  image:
+    repository: simulator-server
+    tag: "latest"
+  port: 8002
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 1Gi
+
+  env: []
+  # - name: SERVER_MODE
+  #   value: "production"
+
+simulatorVehicle:
+  enabled: true
+  name: simulator-vehicle
+  image:
+    repository: simulator-vehicle
+    tag: "latest"
+  port: 8003
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 300m
+      memory: 384Mi
+    limits:
+      cpu: 1500m
+      memory: 768Mi
+
+  env: []
+
+# ============================================================
+# Target Components
+# ============================================================
+targetAndroid:
+  enabled: true
+  name: target-android
+  image:
+    repository: target-android
+    tag: "latest"
+  port: 8004
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+  env: []
+
+targetCluster:
+  enabled: true
+  name: target-cluster
+  image:
+    repository: target-cluster
+    tag: "latest"
+  port: 8005
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 400m
+      memory: 512Mi
+    limits:
+      cpu: 1500m
+      memory: 1Gi
+
+  env: []
+
+# ============================================================
+# Service Account
+# ============================================================
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# ============================================================
+# Pod Disruption Budget
+# ============================================================
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# ============================================================
+# Monitoring / Observability
+# ============================================================
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    path: /metrics
