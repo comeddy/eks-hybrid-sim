@@ -60,6 +60,7 @@ app.kubernetes.io/component: {{ .component }}
 {{- end }}
 
 {{- define "sim.componentSelector" -}}
+app.kubernetes.io/name: simulator-platform
 app.kubernetes.io/instance: {{ .ctx.Release.Name }}
 app.kubernetes.io/component: {{ .component }}
 simulator-platform/oem: {{ .ctx.Values.oemId }}

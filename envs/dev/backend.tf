@@ -22,7 +22,10 @@ variable "eks_cluster_name" { type = string }
 variable "ecr_registry" { type = string }
 variable "helm_chart_path" { type = string }
 variable "hybrid_node_enabled" { type = bool }
-variable "alb_security_group_id" { type = string; default = "" }
+variable "alb_security_group_id" {
+  type    = string
+  default = ""
+}
 variable "oem_users" { type = any }
 
 # --- Outputs ---

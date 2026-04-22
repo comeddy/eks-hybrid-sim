@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: {{ include "sim.fullname" . }}-nginx
   labels:
-    {{- include "sim.componentLabels" (dict "ctx" . "component" "nginx") | nindent 4 }}
+    {{- include "sim.componentLabels" (dict "ctx" . "component" "nginx-proxy") | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "sim.componentSelector" (dict "ctx" . "component" "nginx") | nindent 6 }}
+      {{- include "sim.componentSelector" (dict "ctx" . "component" "nginx-proxy") | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "sim.componentSelector" (dict "ctx" . "component" "nginx") | nindent 8 }}
+        {{- include "sim.componentSelector" (dict "ctx" . "component" "nginx-proxy") | nindent 8 }}
       annotations:
         checksum/nginx-config: {{ include (print $.Template.BasePath "/configmap-nginx.yaml") . | sha256sum }}
     spec:

@@ -11,5 +11,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "sim.componentSelector" (dict "ctx" . "component" "nginx") | nindent 6 }}
+      {{- include "sim.componentSelector" (dict "ctx" . "component" "nginx-proxy") | nindent 6 }}
 {{- end }}

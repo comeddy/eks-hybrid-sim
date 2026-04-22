@@ -21,8 +21,8 @@ resource "helm_release" "simulator" {
   namespace = kubernetes_namespace_v1.this.metadata[0].name
 
   create_namespace = false
-  wait             = true
-  wait_for_jobs    = true
+  wait             = false
+  wait_for_jobs    = false
   timeout          = 600
   atomic           = false
 
