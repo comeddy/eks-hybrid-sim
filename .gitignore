@@ -20,8 +20,8 @@ override.tf.json
 .env
 credentials.json
 
-# Claude Code
-.claude/
+# Claude Code (local settings only)
+.claude/settings.local.json
 
 # IDE
 .idea/

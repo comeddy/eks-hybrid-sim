@@ -1,0 +1,54 @@
+name: code-reviewer
+description: Terraform + Helm 코드 변경사항을 병렬로 리뷰하는 에이전트
+model: sonnet
+parallel: true
+
+tasks:
+  - name: terraform-review
+    description: Terraform 코드 품질 및 보안 검토
+    prompt: |
+      Review the Terraform changes in this diff for:
+      1. Resource naming consistency (sim-{oem}-{user} pattern)
+      2. for_each key stability (avoid recreation on unrelated changes)
+      3. Sensitive data exposure (no hardcoded secrets)
+      4. Module dependency correctness (depends_on)
+      5. Provider version compatibility
+
+  - name: helm-review
+    description: Helm chart 변경사항 검토
+    prompt: |
+      Review the Helm chart changes for:
+      1. Security context (runAsNonRoot, readOnlyRootFilesystem)
+      2. Resource requests/limits appropriateness
+      3. Ingress annotation correctness (ALB group.name pattern)
+      4. values.yaml default safety
+      5. Template rendering correctness
+
+  - name: doc-sync-check
+    description: 문서 동기화 상태 확인
+    prompt: |
+      Check if documentation is in sync with code changes:
+      1. CLAUDE.md reflects current architecture
+      2. README.md config tables match variables.tf
+      3. Module CLAUDE.md files exist for all modules
+      4. Runbook links are valid
+
+output_schema:
+  type: object
+  properties:
+    summary:
+      type: string
+    risk_level:
+      type: string
+      enum: [low, medium, high, critical]
+    issues:
+      type: array
+      items:
+        type: object
+        properties:
+          severity: { type: string }
+          file: { type: string }
+          description: { type: string }
+    suggestions:
+      type: array
+      items: { type: string }

@@ -1,0 +1,9 @@
+# False positive samples (should NOT be blocked)
+aws_region = "ap-northeast-2"
+eks_cluster_name = "my-cluster"
+base_domain = "example.com"
+image_tag = "v1.2.3"
+namespace = "sim-hyundai-user-a"
+terraform plan -out=tfplan
+helm install my-release ./chart
+certificate_arn = "arn:aws:acm:ap-northeast-2:123456789012:certificate/abcd-1234"

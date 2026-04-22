@@ -1,0 +1,56 @@
+name: security-auditor
+description: IaC 보안 감사를 수행하는 에이전트
+model: sonnet
+
+tasks:
+  - name: terraform-security
+    description: Terraform 보안 감사
+    prompt: |
+      Audit Terraform code for security issues:
+      1. IAM permissions (least privilege principle)
+      2. Network exposure (security groups, public access)
+      3. Encryption at rest and in transit (ACM, S3)
+      4. Secrets in state file or variables
+      5. Provider authentication method safety
+
+  - name: helm-security
+    description: Kubernetes/Helm 보안 감사
+    prompt: |
+      Audit Helm chart for Kubernetes security:
+      1. Pod security context (non-root, read-only filesystem)
+      2. Container capabilities (drop ALL)
+      3. Service account permissions
+      4. Ingress TLS configuration
+      5. Network policy presence
+      6. PodDisruptionBudget configuration
+
+  - name: secret-audit
+    description: 시크릿 노출 감사
+    prompt: |
+      Scan the entire repository for exposed secrets:
+      1. AWS access keys or secret keys
+      2. Hardcoded passwords or tokens
+      3. Private keys or certificates
+      4. Database connection strings
+      5. API keys in any file
+
+output_schema:
+  type: object
+  properties:
+    overall_risk:
+      type: string
+      enum: [low, medium, high, critical]
+    findings:
+      type: array
+      items:
+        type: object
+        properties:
+          category: { type: string }
+          severity: { type: string }
+          file: { type: string }
+          line: { type: integer }
+          description: { type: string }
+          recommendation: { type: string }
+    compliance_score:
+      type: integer
+      description: "0-100 security compliance score"

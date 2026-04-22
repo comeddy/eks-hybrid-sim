@@ -107,3 +107,19 @@ module.helm_release[oem/user] → User별 namespace + Helm release
 - `docs/runbooks/add-oem-user.md` - OEM/User 추가 변경 관리
 - `docs/runbooks/troubleshooting.md` - Pod, Ingress, ACM, Terraform 오류 진단
 - `docs/runbooks/teardown.md` - 리소스 정리/삭제 (순서 보장)
+
+## Auto-Sync Rules
+
+다음 이벤트 발생 시 문서를 자동으로 업데이트해야 합니다:
+
+1. **Terraform 모듈 변경 시**: `modules/` 하위 `.tf` 파일 수정 → `docs/architecture.md`의 해당 모듈 섹션 업데이트
+2. **Helm Chart 변경 시**: `eks-simulator-helm/` 하위 파일 수정 → `docs/architecture.md`의 컴포넌트 섹션 업데이트
+3. **변수 추가/변경 시**: `variables.tf` 또는 `values.yaml` 변경 → `README.md`의 설정 옵션 테이블 동기화
+4. **Runbook 추가 시**: `docs/runbooks/` 에 새 파일 → `CLAUDE.md`의 Operational Runbooks 섹션에 링크 추가
+5. **Plan 모드 종료 시**: 아키텍처 결정이 변경되었으면 `docs/decisions/`에 ADR 작성 검토
+
+### 문서 품질 기준
+
+- 모든 Terraform output은 `docs/architecture.md`에 문서화
+- 새로운 모듈은 자체 `CLAUDE.md` 포함 필수
+- Helm values 변경은 `README.md` 설정 테이블과 동기화

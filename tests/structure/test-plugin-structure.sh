@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Project structure validation tests
+
+echo "# -- Project Root Files --"
+assert_file_exists "CLAUDE.md"
+assert_file_exists "README.md"
+assert_file_exists "CHANGELOG.md"
+assert_file_exists ".gitignore"
+assert_file_exists ".editorconfig"
+assert_file_exists ".mcp.json"
+assert_file_exists ".env.example"
+
+echo "# -- Terraform Files --"
+assert_file_exists "main.tf"
+assert_file_exists "variables.tf"
+assert_file_exists "outputs.tf"
+assert_file_exists "locals.tf"
+assert_file_exists "providers.tf"
+assert_file_exists "versions.tf"
+
+echo "# -- Module Directories --"
+assert_dir_exists "modules/acm"
+assert_dir_exists "modules/route53"
+assert_dir_exists "modules/helm-release"
+
+echo "# -- Module CLAUDE.md --"
+assert_file_exists "modules/acm/CLAUDE.md"
+assert_file_exists "modules/route53/CLAUDE.md"
+assert_file_exists "modules/helm-release/CLAUDE.md"
+assert_file_exists "eks-simulator-helm/CLAUDE.md"
+assert_file_exists "envs/CLAUDE.md"
+
+echo "# -- Helm Chart --"
+assert_file_exists "eks-simulator-helm/Chart.yaml"
+assert_file_exists "eks-simulator-helm/values.yaml"
+assert_dir_exists "eks-simulator-helm/templates"
+
+echo "# -- Documentation --"
+assert_file_exists "docs/architecture.md"
+assert_file_exists "docs/onboarding.md"
+assert_file_exists "docs/decisions/.template.md"
+assert_file_exists "docs/runbooks/.template.md"
+assert_dir_exists "docs/runbooks"
+
+echo "# -- Claude Code Structure --"
+assert_file_exists ".claude/settings.json"
+assert_dir_exists ".claude/hooks"
+assert_dir_exists ".claude/skills"
+assert_dir_exists ".claude/commands"
+assert_dir_exists ".claude/agents"
+
+echo "# -- Scripts --"
+assert_file_exists "scripts/setup.sh"
+assert_file_exists "scripts/install-hooks.sh"
+assert_executable "scripts/setup.sh"
+assert_executable "scripts/install-hooks.sh"
+
+echo "# -- CLAUDE.md Sections --"
+assert_contains "CLAUDE.md" "Project Overview"
+assert_contains "CLAUDE.md" "Commands"
+assert_contains "CLAUDE.md" "Architecture"
+assert_contains "CLAUDE.md" "Key Conventions"
+assert_contains "CLAUDE.md" "Auto-Sync Rules"
