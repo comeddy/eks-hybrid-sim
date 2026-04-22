@@ -1,14 +1,11 @@
 # ============================================================
-# Global Configuration
+# User / OEM 식별자 (Terraform에서 주입)
 # ============================================================
-# User/OEM 식별자 (Terraform에서 주입)
 userId: "user-a"
 oemId: "hyundai"
 
 # ECR 레지스트리 주소
 imageRegistry: "123456789012.dkr.ecr.ap-northeast-2.amazonaws.com"
-
-# 이미지 Pull Policy
 imagePullPolicy: IfNotPresent
 
 # ============================================================
@@ -18,23 +15,21 @@ ingress:
   enabled: true
   className: alb
   baseDomain: "example.com"
+  certArn: ""
+  # ALB에 연결할 Security Group ID (0.0.0.0/0 금지, CloudFront prefix list만 허용)
+  securityGroupId: ""
 
   annotations:
-    # ALB Controller 설정
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: "443"
-    # OEM별 ALB 공유를 위한 그룹 설정 (oemId로 동적 생성)
-    alb.ingress.kubernetes.io/group.name: ""  # 템플릿에서 oemId 기반으로 설정
-    alb.ingress.kubernetes.io/group.order: "100"
-    # ACM 인증서 ARN (Terraform에서 주입)
-    alb.ingress.kubernetes.io/certificate-arn: ""
-    # Health Check
     alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
-    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
     alb.ingress.kubernetes.io/success-codes: "200"
+
+  # OEM별 ALB 공유 그룹 (템플릿에서 ajt-{oemId}로 자동 생성)
+  groupOrder: "100"
 
 # ============================================================
 # Hybrid Node Configuration
@@ -52,9 +47,7 @@ hybridNode:
 # ============================================================
 # Common Pod Settings
 # ============================================================
-commonLabels:
-  app.kubernetes.io/part-of: simulator-platform
-  app.kubernetes.io/managed-by: helm
+commonLabels: {}
 
 podSecurityContext:
   runAsNonRoot: true
@@ -69,16 +62,13 @@ containerSecurityContext:
       - ALL
 
 # ============================================================
-# Nginx Proxy Configuration
+# Nginx Reverse Proxy
 # ============================================================
-nginxProxy:
-  enabled: true
+nginx:
   image:
     repository: nginx
     tag: "1.25-alpine"
-  replicas: 1
   port: 80
-
   resources:
     requests:
       cpu: 100m
@@ -88,109 +78,100 @@ nginxProxy:
       memory: 256Mi
 
 # ============================================================
-# Simulator Components
+# Backend Services (동적 정의)
+#
+# 서비스 추가: 이 map에 항목을 추가하면 자동으로
+#   - Deployment + Service 생성
+#   - Nginx location block 추가
+#   - NOTES.txt에 엔드포인트 표시
+#
+# pathPrefix: nginx에서 이 prefix로 들어온 요청을 해당 서비스로 프록시
 # ============================================================
-simulatorCan:
-  enabled: true
-  name: simulator-can
-  image:
-    repository: simulator-can
-    tag: "latest"
-  port: 8001
-  replicas: 1
+services:
+  simulator-can:
+    pathPrefix: "/can"
+    image:
+      repository: simulator-can
+      tag: "latest"
+    port: 8001
+    replicas: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
+    env: []
+    probeDefaults: true
 
-  resources:
-    requests:
-      cpu: 200m
-      memory: 256Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
+  simulator-server:
+    pathPrefix: "/server"
+    image:
+      repository: simulator-server
+      tag: "latest"
+    port: 8002
+    replicas: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 1Gi
+    env: []
+    probeDefaults: true
 
-  env: []
-  # - name: CAN_INTERFACE
-  #   value: "vcan0"
+  simulator-vehicle:
+    pathPrefix: "/vehicle"
+    image:
+      repository: simulator-vehicle
+      tag: "latest"
+    port: 8003
+    replicas: 1
+    resources:
+      requests:
+        cpu: 300m
+        memory: 384Mi
+      limits:
+        cpu: 1500m
+        memory: 768Mi
+    env: []
+    probeDefaults: true
 
-simulatorServer:
-  enabled: true
-  name: simulator-server
-  image:
-    repository: simulator-server
-    tag: "latest"
-  port: 8002
-  replicas: 1
+  target-android:
+    pathPrefix: "/android"
+    image:
+      repository: target-android
+      tag: "latest"
+    port: 8004
+    replicas: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+    env: []
+    probeDefaults: true
 
-  resources:
-    requests:
-      cpu: 500m
-      memory: 512Mi
-    limits:
-      cpu: 2000m
-      memory: 1Gi
-
-  env: []
-  # - name: SERVER_MODE
-  #   value: "production"
-
-simulatorVehicle:
-  enabled: true
-  name: simulator-vehicle
-  image:
-    repository: simulator-vehicle
-    tag: "latest"
-  port: 8003
-  replicas: 1
-
-  resources:
-    requests:
-      cpu: 300m
-      memory: 384Mi
-    limits:
-      cpu: 1500m
-      memory: 768Mi
-
-  env: []
-
-# ============================================================
-# Target Components
-# ============================================================
-targetAndroid:
-  enabled: true
-  name: target-android
-  image:
-    repository: target-android
-    tag: "latest"
-  port: 8004
-  replicas: 1
-
-  resources:
-    requests:
-      cpu: 500m
-      memory: 1Gi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
-
-  env: []
-
-targetCluster:
-  enabled: true
-  name: target-cluster
-  image:
-    repository: target-cluster
-    tag: "latest"
-  port: 8005
-  replicas: 1
-
-  resources:
-    requests:
-      cpu: 400m
-      memory: 512Mi
-    limits:
-      cpu: 1500m
-      memory: 1Gi
-
-  env: []
+  target-cluster:
+    pathPrefix: "/cluster"
+    image:
+      repository: target-cluster
+      tag: "latest"
+    port: 8005
+    replicas: 1
+    resources:
+      requests:
+        cpu: 400m
+        memory: 512Mi
+      limits:
+        cpu: 1500m
+        memory: 1Gi
+    env: []
+    probeDefaults: true
 
 # ============================================================
 # Service Account
@@ -206,14 +187,3 @@ serviceAccount:
 podDisruptionBudget:
   enabled: false
   minAvailable: 1
-  # maxUnavailable: 1
-
-# ============================================================
-# Monitoring / Observability
-# ============================================================
-monitoring:
-  enabled: false
-  serviceMonitor:
-    enabled: false
-    interval: 30s
-    path: /metrics

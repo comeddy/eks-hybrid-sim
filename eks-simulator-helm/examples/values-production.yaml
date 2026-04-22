@@ -1,12 +1,12 @@
 # ============================================================
-# Production Environment Override
-# 프로덕션 환경용 공통 설정 (OEM/User별 values와 함께 사용)
+# Production 환경 오버레이
+# helm template test ../../eks-simulator-helm -f values-hyundai-user-a.yaml -f values-production.yaml
+#
+# 보안 강화, PDB 활성화 등 운영 환경 공통 설정.
+# OEM/User별 values 위에 -f로 덮어씌워 사용.
 # ============================================================
-
-# 이미지 풀 정책
 imagePullPolicy: Always
 
-# 더 강화된 보안 설정
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
@@ -22,84 +22,11 @@ containerSecurityContext:
     drop:
       - ALL
 
-# Nginx Proxy - Production 설정
-nginxProxy:
-  enabled: true
-  replicas: 2  # HA 구성
+nginx:
   resources:
-    requests:
-      cpu: 200m
-      memory: 256Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
+    requests: { cpu: 200m, memory: 256Mi }
+    limits:   { cpu: 1000m, memory: 512Mi }
 
-# Simulator 컴포넌트 - Production 리소스
-simulatorCan:
-  enabled: true
-  replicas: 1
-  resources:
-    requests:
-      cpu: 500m
-      memory: 512Mi
-    limits:
-      cpu: 2000m
-      memory: 1Gi
-
-simulatorServer:
-  enabled: true
-  replicas: 2  # HA 구성
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 1Gi
-    limits:
-      cpu: 4000m
-      memory: 2Gi
-
-simulatorVehicle:
-  enabled: true
-  replicas: 1
-  resources:
-    requests:
-      cpu: 500m
-      memory: 512Mi
-    limits:
-      cpu: 2000m
-      memory: 1Gi
-
-# Target 컴포넌트 - Production 리소스
-targetAndroid:
-  enabled: true
-  replicas: 1
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 2Gi
-    limits:
-      cpu: 4000m
-      memory: 4Gi
-
-targetCluster:
-  enabled: true
-  replicas: 1
-  resources:
-    requests:
-      cpu: 500m
-      memory: 1Gi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
-
-# Pod Disruption Budget 활성화
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
-
-# 모니터링 활성화
-monitoring:
-  enabled: true
-  serviceMonitor:
-    enabled: true
-    interval: 30s
-    path: /metrics

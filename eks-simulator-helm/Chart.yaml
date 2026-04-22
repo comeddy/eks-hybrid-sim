@@ -2,10 +2,10 @@ apiVersion: v2
 name: simulator-platform
 description: |
   EKS Hybrid Node 기반 시뮬레이터 플랫폼 Helm Chart.
-  OEM별/User별로 5개의 시뮬레이터 Pod와 Nginx Proxy를 배포합니다.
+  OEM사별로 사용자 단위 배포. services map으로 백엔드 서비스를 동적 정의.
 
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "1.0.0"
 
 keywords:
@@ -17,9 +17,5 @@ keywords:
 maintainers:
   - name: Platform Team
     email: platform@example.com
-
-home: https://github.com/your-org/eks-simulator-helm
-sources:
-  - https://github.com/your-org/eks-simulator-helm
 
 dependencies: []

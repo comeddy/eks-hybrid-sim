@@ -1,60 +1,35 @@
 # ============================================================
-# Example: Hyundai OEM - User A
-# Domain: user-a.hyundai.example.com
+# helm template 로컬 테스트용
+# helm template test ../../eks-simulator-helm -f values-hyundai-user-a.yaml
+#
+# 실제 배포는 Terraform이 set으로 주입하므로 이 파일은 사용하지 않음.
+# Terraform tfvars 예제 → envs/dev/terraform.tfvars.example 참고
 # ============================================================
-
 userId: "user-a"
 oemId: "hyundai"
-
 imageRegistry: "123456789012.dkr.ecr.ap-northeast-2.amazonaws.com"
 
 ingress:
-  enabled: true
-  className: alb
-  baseDomain: "example.com"
-  annotations:
-    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:ap-northeast-2:123456789012:certificate/xxxx-yyyy-zzzz"
+  baseDomain: "sim.example.com"
+  certArn: "arn:aws:acm:ap-northeast-2:123456789012:certificate/xxxx-yyyy-zzzz"
 
 hybridNode:
   enabled: true
-  nodeSelector:
-    eks.amazonaws.com/compute-type: hybrid
-  tolerations:
-    - key: "eks.amazonaws.com/compute-type"
-      operator: "Equal"
-      value: "hybrid"
-      effect: "NoSchedule"
 
-# Component image tags
-simulatorCan:
-  enabled: true
-  image:
-    tag: "v1.2.0"
-  resources:
-    requests:
-      cpu: 200m
-      memory: 256Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-
-simulatorServer:
-  enabled: true
-  image:
-    tag: "v1.3.0"
-  replicas: 1
-
-simulatorVehicle:
-  enabled: true
-  image:
-    tag: "v1.1.0"
-
-targetAndroid:
-  enabled: true
-  image:
-    tag: "v2.0.0"
-
-targetCluster:
-  enabled: true
-  image:
-    tag: "v1.0.0"
+# 태그만 오버라이드, 나머지는 values.yaml 기본값 사용
+services:
+  simulator-can:
+    image:
+      tag: "v1.2.0"
+  simulator-server:
+    image:
+      tag: "v1.3.0"
+  simulator-vehicle:
+    image:
+      tag: "v1.1.0"
+  target-android:
+    image:
+      tag: "v2.0.0"
+  target-cluster:
+    image:
+      tag: "v1.0.0"

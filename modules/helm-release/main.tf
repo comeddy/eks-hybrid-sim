@@ -20,30 +20,28 @@ resource "helm_release" "simulator" {
   chart     = var.helm_chart_path
   namespace = kubernetes_namespace_v1.this.metadata[0].name
 
-  create_namespace = false   # 위에서 이미 생성
-  wait             = false   # 이미지 준비 전 배포 허용
-  timeout          = 600     # 10분
-  atomic           = false   # 초기 배포 시 롤백 방지
+  create_namespace = false
+  wait             = true
+  wait_for_jobs    = true
+  timeout          = 600
+  atomic           = false
 
-  set = [
-    # ---- Core ----
-    { name = "userId",        value = var.user_id },
-    { name = "oemId",         value = var.oem_id },
-    { name = "imageRegistry", value = var.ecr_registry },
-
-    # ---- Ingress / ALB ----
-    { name = "ingress.baseDomain",                                                value = var.base_domain },
-    { name = "ingress.annotations.alb\\.ingress\\.kubernetes\\.io/certificate-arn", value = var.acm_cert_arn },
-
-    # ---- Hybrid Node ----
-    { name = "hybridNode.enabled", value = tostring(var.hybrid_node_enabled) },
-
-    # ---- Component image tags ----
-    { name = "simulatorCan.tag",         value = var.simulator_can_tag },
-    { name = "simulatorServer.tag",      value = var.simulator_server_tag },
-    { name = "simulatorServer.replicas", value = tostring(var.simulator_server_replicas) },
-    { name = "simulatorVehicle.tag",     value = var.simulator_vehicle_tag },
-    { name = "targetAndroid.tag",        value = var.target_android_tag },
-    { name = "targetCluster.tag",        value = var.target_cluster_tag },
-  ]
+  set = concat(
+    [
+      { name = "userId", value = var.user_id },
+      { name = "oemId", value = var.oem_id },
+      { name = "imageRegistry", value = var.ecr_registry },
+      { name = "ingress.baseDomain", value = var.base_domain },
+      { name = "ingress.certArn", value = var.acm_cert_arn },
+      { name = "hybridNode.enabled", value = tostring(var.hybrid_node_enabled) },
+      { name = "ingress.securityGroupId", value = var.alb_security_group_id },
+    ],
+    # 서비스별 이미지 태그 + replicas (동적 주입)
+    flatten([
+      for svc_name, svc in var.services : [
+        { name = "services.${svc_name}.image.tag", value = svc.image_tag },
+        { name = "services.${svc_name}.replicas", value = tostring(svc.replicas) },
+      ]
+    ])
+  )
 }

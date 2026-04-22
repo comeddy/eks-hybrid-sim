@@ -39,34 +39,18 @@ variable "hybrid_node_enabled" {
   default     = true
 }
 
-# --- 컴포넌트별 이미지 태그 ---
-variable "simulator_can_tag" {
-  type    = string
-  default = "latest"
+variable "alb_security_group_id" {
+  description = "ALB에 연결할 Security Group ID"
+  type        = string
+  default     = ""
 }
 
-variable "simulator_server_tag" {
-  type    = string
-  default = "latest"
-}
-
-variable "simulator_vehicle_tag" {
-  type    = string
-  default = "latest"
-}
-
-variable "target_android_tag" {
-  type    = string
-  default = "latest"
-}
-
-variable "target_cluster_tag" {
-  type    = string
-  default = "latest"
-}
-
-variable "simulator_server_replicas" {
-  description = "Simulator-Server 레플리카 수"
-  type        = number
-  default     = 1
+variable "services" {
+  description = "백엔드 서비스 정의 map (services.simulator-can.image.tag 등)"
+  type = map(object({
+    path_prefix = string
+    image_tag   = optional(string, "latest")
+    replicas    = optional(number, 1)
+  }))
+  default = {}
 }

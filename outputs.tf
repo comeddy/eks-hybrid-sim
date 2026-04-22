@@ -1,18 +1,7 @@
-# ============================================================
-# Outputs
-# ============================================================
-
 output "acm_certificate_arns" {
   description = "OEM별 ACM 인증서 ARN"
   value = {
     for oem_id, mod in module.acm : oem_id => mod.certificate_arn
-  }
-}
-
-output "oem_domains" {
-  description = "OEM별 와일드카드 도메인"
-  value = {
-    for oem_id in local.oem_ids : oem_id => "*.${oem_id}.${var.base_domain}"
   }
 }
 
