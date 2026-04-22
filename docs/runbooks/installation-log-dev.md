@@ -6,6 +6,23 @@
 > EKS 클러스터: <EKS_CLUSTER_NAME> (v1.35)  
 > 도메인: <BASE_DOMAIN>
 
+## 변수 치환 안내
+
+이 문서의 `< >` 변수는 실제 환경 값으로 치환해야 합니다.
+
+| 변수 | 설명 | 예시 형식 |
+|------|------|-----------|
+| `<ACCOUNT_ID>` | AWS 계정 ID (12자리 숫자) | `123456789012` |
+| `<IAM_USER_ID>` | IAM User 고유 ID | `AIDAEXAMPLE1234567890` |
+| `<EKS_CLUSTER_NAME>` | EKS 클러스터 이름 | `my-simulator-cluster` |
+| `<BASE_DOMAIN>` | Route 53에 등록된 기본 도메인 | `example.com` |
+| `<OIDC_ID>` | EKS OIDC Provider ID (32자 hex) | `B5BAC3551767E46C1DA1D66CE30FEAD9` |
+| `<ZONE_ID>` | Route 53 Hosted Zone ID | `Z0123456789ABCDEFGHIJ` |
+| `<CERT_ID_1>` | hyundai OEM용 ACM 인증서 ID (UUID) | `a1b2c3d4-e5f6-7890-abcd-ef1234567890` |
+| `<CERT_ID_2>` | kia OEM용 ACM 인증서 ID (UUID) | `f9e8d7c6-b5a4-3210-fedc-ba9876543210` |
+| `<THUMBPRINT>` | OIDC Provider Thumbprint (40자 hex) | `9e99a48a9960b14926bb7f3b02e22da2b0ab7280` |
+| `<NODE_1>`, `<NODE_2>` | EC2 노드 프라이빗 DNS 프리픽스 | `ip-10-0-1-100`, `ip-10-0-2-200` |
+
 ---
 
 ## 1. 사전 요구사항 확인
