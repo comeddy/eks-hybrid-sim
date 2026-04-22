@@ -2,42 +2,42 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "simulator-platform.fullname" . }}
+  name: {{ include "sim.fullname" . }}
   labels:
-    {{- include "simulator-platform.labels" . | nindent 4 }}
+    {{- include "sim.labels" . | nindent 4 }}
   annotations:
-    # ALB Ingress Controller annotations
     kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    # ALB Controller
+    alb.ingress.kubernetes.io/group.name: {{ include "sim.albGroupName" . | quote }}
+    alb.ingress.kubernetes.io/group.order: {{ .Values.ingress.groupOrder | quote }}
     alb.ingress.kubernetes.io/scheme: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/scheme" "internet-facing" | quote }}
     alb.ingress.kubernetes.io/target-type: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/target-type" "ip" | quote }}
     alb.ingress.kubernetes.io/listen-ports: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/listen-ports" "[{\"HTTPS\":443}]" | quote }}
     alb.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/ssl-redirect" "443" | quote }}
-    # OEM별 ALB 그룹 공유 (같은 OEM의 모든 사용자가 하나의 ALB 공유)
-    alb.ingress.kubernetes.io/group.name: {{ include "simulator-platform.albGroupName" . | quote }}
-    alb.ingress.kubernetes.io/group.order: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/group.order" "100" | quote }}
-    # ACM 인증서
-    {{- if index .Values.ingress.annotations "alb.ingress.kubernetes.io/certificate-arn" }}
-    alb.ingress.kubernetes.io/certificate-arn: {{ index .Values.ingress.annotations "alb.ingress.kubernetes.io/certificate-arn" | quote }}
-    {{- end }}
-    # Health Check 설정
     alb.ingress.kubernetes.io/healthcheck-path: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/healthcheck-path" "/health" | quote }}
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/healthcheck-interval-seconds" "30" | quote }}
-    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/healthcheck-timeout-seconds" "5" | quote }}
     alb.ingress.kubernetes.io/success-codes: {{ .Values.ingress.annotations | dig "alb.ingress.kubernetes.io/success-codes" "200" | quote }}
-    # Tags for cost allocation
-    alb.ingress.kubernetes.io/tags: "OEM={{ .Values.oemId }},ManagedBy=helm"
+    alb.ingress.kubernetes.io/tags: "OEM={{ .Values.oemId }},User={{ .Values.userId }},ManagedBy=helm"
+    {{- if .Values.ingress.securityGroupId }}
+    alb.ingress.kubernetes.io/security-groups: {{ .Values.ingress.securityGroupId | quote }}
+    alb.ingress.kubernetes.io/manage-backend-security-group-rules: "true"
+    {{- end }}
+    {{- if .Values.ingress.certArn }}
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.ingress.certArn | quote }}
+    {{- end }}
+    # External-DNS: OEM의 Hosted Zone에 A 레코드 자동 생성
+    external-dns.alpha.kubernetes.io/hostname: {{ include "sim.fqdn" . }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
-    # User-specific domain: user-a.hyundai.example.com
-    - host: {{ include "simulator-platform.fqdn" . }}
+    - host: {{ include "sim.fqdn" . }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: {{ include "simulator-platform.fullname" . }}-nginx
+                name: {{ include "sim.fullname" . }}-nginx
                 port:
-                  number: {{ .Values.nginxProxy.port }}
+                  number: {{ .Values.nginx.port }}
 {{- end }}

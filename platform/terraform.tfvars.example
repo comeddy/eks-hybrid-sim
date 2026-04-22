@@ -1,0 +1,11 @@
+# ============================================================
+# Platform 공통 인프라 — terraform.tfvars
+# Platform Team이 1회 실행
+#
+# VPC ID는 EKS 클러스터에서 자동 추출 (별도 입력 불필요)
+#
+# 사전 요건:
+#   aws eks create-addon --cluster-name <CLUSTER> --addon-name eks-pod-identity-agent
+# ============================================================
+eks_cluster_name = "my-eks-cluster"
+base_domain      = "sim.example.com"

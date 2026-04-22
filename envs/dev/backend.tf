@@ -10,29 +10,20 @@ module "simulator_platform" {
   ecr_registry     = var.ecr_registry
   helm_chart_path  = var.helm_chart_path
 
-  hybrid_node_enabled = var.hybrid_node_enabled
-  oem_users           = var.oem_users
-
-  alb_dns_overrides = var.alb_dns_overrides
-  alb_zone_id       = var.alb_zone_id
+  hybrid_node_enabled   = var.hybrid_node_enabled
+  alb_security_group_id = var.alb_security_group_id
+  oem_users             = var.oem_users
 }
 
 # --- 변수 pass-through ---
-variable "aws_region"          { type = string }
-variable "base_domain"         { type = string }
-variable "eks_cluster_name"    { type = string }
-variable "ecr_registry"        { type = string }
-variable "helm_chart_path"     { type = string }
+variable "aws_region" { type = string }
+variable "base_domain" { type = string }
+variable "eks_cluster_name" { type = string }
+variable "ecr_registry" { type = string }
+variable "helm_chart_path" { type = string }
 variable "hybrid_node_enabled" { type = bool }
-variable "oem_users"           { type = any }
-variable "alb_dns_overrides" {
-  type    = map(string)
-  default = null
-}
-variable "alb_zone_id" {
-  type    = string
-  default = "ZWKZPGTI48KDX"
-}
+variable "alb_security_group_id" { type = string; default = "" }
+variable "oem_users" { type = any }
 
 # --- Outputs ---
 output "user_endpoints" {

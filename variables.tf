@@ -8,13 +8,12 @@ variable "aws_region" {
 }
 
 variable "base_domain" {
-  description = "기본 도메인 (예: example.com)"
+  description = "기본 도메인 (예: sim.example.com)"
   type        = string
-  default     = "example.com"
 }
 
 variable "route53_zone_id" {
-  description = "example.com 의 Route 53 Hosted Zone ID (생략 시 data source로 조회)"
+  description = "base_domain의 Route 53 Hosted Zone ID (생략 시 data source로 조회)"
   type        = string
   default     = ""
 }
@@ -47,52 +46,42 @@ variable "helm_chart_path" {
 variable "oem_users" {
   description = <<-EOT
     OEM별 User 목록.
-    key = OEM ID, value = 해당 OEM의 User 설정 리스트.
+    services 맵으로 서비스별 이미지 태그와 replicas를 오버라이드.
+    생략된 서비스는 Helm chart의 기본값(latest, replicas=1)을 사용.
+
     예:
     {
       hyundai = {
         users = {
-          user-a = { simulator_server_tag = "v1.3.0" }
-          user-b = {}
-        }
-      }
-      kia = {
-        users = {
-          user-a = {}
+          user-a = {
+            services = {
+              simulator-server = { image_tag = "v1.3.0" }
+              simulator-can    = { image_tag = "v1.2.0" }
+            }
+          }
+          user-b = {}   # 모든 서비스 기본값
         }
       }
     }
   EOT
   type = map(object({
     users = map(object({
-      simulator_can_tag     = optional(string, "latest")
-      simulator_server_tag  = optional(string, "latest")
-      simulator_vehicle_tag = optional(string, "latest")
-      target_android_tag    = optional(string, "latest")
-      target_cluster_tag    = optional(string, "latest")
-      simulator_server_replicas = optional(number, 1)
+      services = optional(map(object({
+        path_prefix = optional(string, "")
+        image_tag   = optional(string, "latest")
+        replicas    = optional(number, 1)
+      })), {})
     }))
   }))
 }
 
 # ============================================================
-# ALB (Route 53 Alias 용)
+# ALB Security Group
 # ============================================================
-variable "alb_dns_overrides" {
-  description = <<-EOT
-    OEM별 ALB DNS 이름 오버라이드 (2차 apply 시 사용).
-    첫 배포 시 비워두면 Route 53 레코드가 생성되지 않고,
-    ALB 프로비저닝 후 값을 넣으면 Alias 레코드가 생성됩니다.
-    예: { hyundai = "k8s-ajthyun-xxx.ap-northeast-2.elb.amazonaws.com" }
-  EOT
-  type    = map(string)
-  default = null
-}
-
-variable "alb_zone_id" {
-  description = "ALB Hosted Zone ID (ap-northeast-2 = ZWKZPGTI48KDX)"
+variable "alb_security_group_id" {
+  description = "ALB에 연결할 SG ID (platform/cluster에서 생성, CloudFront prefix list만 허용)"
   type        = string
-  default     = "ZWKZPGTI48KDX"
+  default     = ""
 }
 
 # ============================================================

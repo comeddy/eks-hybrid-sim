@@ -1,10 +1,9 @@
-{{- if .Values.nginxProxy.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "simulator-platform.fullname" . }}-nginx-config
+  name: {{ include "sim.fullname" . }}-nginx-config
   labels:
-    {{- include "simulator-platform.labels" . | nindent 4 }}
+    {{- include "sim.componentLabels" (dict "ctx" . "component" "nginx") | nindent 4 }}
 data:
   nginx.conf: |
     worker_processes auto;
@@ -18,7 +17,6 @@ data:
     }
 
     http {
-        # Temp paths for non-root user
         client_body_temp_path /tmp/client_temp;
         proxy_temp_path       /tmp/proxy_temp;
         fastcgi_temp_path     /tmp/fastcgi_temp;
@@ -31,62 +29,41 @@ data:
         log_format main '$remote_addr - $remote_user [$time_local] "$request" '
                         '$status $body_bytes_sent "$http_referer" '
                         '"$http_user_agent" "$http_x_forwarded_for"';
-
         access_log /var/log/nginx/access.log main;
 
         sendfile        on;
         tcp_nopush      on;
         tcp_nodelay     on;
-        keepalive_timeout  65;
-        types_hash_max_size 2048;
+        keepalive_timeout 65;
 
-        # Gzip compression
         gzip on;
         gzip_vary on;
         gzip_proxied any;
         gzip_comp_level 6;
         gzip_types text/plain text/css text/xml application/json application/javascript application/xml;
 
-        # Upstream definitions for backend services
-        upstream simulator-can {
-            server {{ include "simulator-platform.fullname" . }}-can:{{ .Values.simulatorCan.port }};
+        # --- Upstreams (auto-generated from services map) ---
+        {{- range $name, $svc := .Values.services }}
+        upstream {{ $name }} {
+            server {{ include "sim.fullname" $ }}-{{ $name }}.{{ $.Release.Namespace }}.svc.cluster.local:{{ $svc.port }};
             keepalive 32;
         }
-
-        upstream simulator-server {
-            server {{ include "simulator-platform.fullname" . }}-server:{{ .Values.simulatorServer.port }};
-            keepalive 32;
-        }
-
-        upstream simulator-vehicle {
-            server {{ include "simulator-platform.fullname" . }}-vehicle:{{ .Values.simulatorVehicle.port }};
-            keepalive 32;
-        }
-
-        upstream target-android {
-            server {{ include "simulator-platform.fullname" . }}-android:{{ .Values.targetAndroid.port }};
-            keepalive 32;
-        }
-
-        upstream target-cluster {
-            server {{ include "simulator-platform.fullname" . }}-cluster:{{ .Values.targetCluster.port }};
-            keepalive 32;
-        }
+        {{- end }}
 
         server {
-            listen {{ .Values.nginxProxy.port }};
-            server_name {{ include "simulator-platform.fqdn" . }};
+            listen {{ .Values.nginx.port }};
+            server_name {{ include "sim.fqdn" . }};
 
-            # Health check endpoint for ALB
             location /health {
                 access_log off;
                 return 200 'OK';
                 add_header Content-Type text/plain;
             }
 
-            # Simulator CAN
-            location /can/ {
-                proxy_pass http://simulator-can/;
+            # --- Location blocks (auto-generated from services map) ---
+            {{- range $name, $svc := .Values.services }}
+            location {{ $svc.pathPrefix }}/ {
+                proxy_pass http://{{ $name }}/;
                 proxy_http_version 1.1;
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
@@ -97,70 +74,8 @@ data:
                 proxy_send_timeout 60s;
                 proxy_read_timeout 60s;
             }
+            {{- end }}
 
-            # Simulator Server
-            location /server/ {
-                proxy_pass http://simulator-server/;
-                proxy_http_version 1.1;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                proxy_set_header Connection "";
-                proxy_connect_timeout 30s;
-                proxy_send_timeout 60s;
-                proxy_read_timeout 60s;
-            }
-
-            # Simulator Vehicle
-            location /vehicle/ {
-                proxy_pass http://simulator-vehicle/;
-                proxy_http_version 1.1;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                proxy_set_header Connection "";
-                proxy_connect_timeout 30s;
-                proxy_send_timeout 60s;
-                proxy_read_timeout 60s;
-            }
-
-            # Target Android
-            location /android/ {
-                proxy_pass http://target-android/;
-                proxy_http_version 1.1;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                proxy_set_header Connection "";
-                proxy_connect_timeout 30s;
-                proxy_send_timeout 120s;
-                proxy_read_timeout 120s;
-            }
-
-            # Target Cluster
-            location /cluster/ {
-                proxy_pass http://target-cluster/;
-                proxy_http_version 1.1;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                proxy_set_header Connection "";
-                proxy_connect_timeout 30s;
-                proxy_send_timeout 60s;
-                proxy_read_timeout 60s;
-            }
-
-            # Root path - redirect to server or show status
-            location / {
-                return 200 '{"status":"ok","user":"{{ .Values.userId }}","oem":"{{ .Values.oemId }}","endpoints":["/can/","/server/","/vehicle/","/android/","/cluster/"]}';
-                add_header Content-Type application/json;
-            }
-
-            # WebSocket support (if needed)
             location /ws/ {
                 proxy_pass http://simulator-server/ws/;
                 proxy_http_version 1.1;
@@ -171,6 +86,10 @@ data:
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_read_timeout 86400;
             }
+
+            location / {
+                return 200 '{"status":"ok","user":"{{ .Values.userId }}","oem":"{{ .Values.oemId }}"}';
+                add_header Content-Type application/json;
+            }
         }
     }
-{{- end }}
