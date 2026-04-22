@@ -1,3 +1,9 @@
+---
+name: test-all
+description: 전체 검증 스위트 — terraform fmt/validate, helm lint/template, 프로젝트 구조 테스트
+allowed-tools: Bash, Read
+---
+
 # Test All
 
 전체 검증 스위트를 실행합니다.

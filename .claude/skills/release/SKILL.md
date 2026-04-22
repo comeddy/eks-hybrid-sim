@@ -1,3 +1,10 @@
+---
+name: release
+description: 버전 릴리스 절차 — pre-release 검증, Chart.yaml/CHANGELOG 업데이트, 태그, post-release 배포
+args: "VERSION — 릴리스 버전 (예: v0.2.0)"
+output: "Pre-release checklist results, commit/tag SHA, post-release action items"
+---
+
 # Release Skill
 
 새 버전 릴리스 절차를 수행합니다.

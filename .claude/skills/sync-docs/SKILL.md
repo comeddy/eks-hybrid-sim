@@ -1,3 +1,9 @@
+---
+name: sync-docs
+description: 코드-문서 동기화 검사 — main.tf, variables.tf, values.yaml, outputs.tf 대비 docs 일치 확인
+output: "Sync target별 동기화 상태 테이블 (0-100%), 전체 Quality Score"
+---
+
 # Sync Docs Skill
 
 프로젝트 문서를 코드 현재 상태와 동기화합니다.

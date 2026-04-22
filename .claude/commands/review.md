@@ -1,3 +1,9 @@
+---
+name: review
+description: 현재 브랜치 변경사항 코드 리뷰 — git diff, terraform/helm 검증, 시크릿 스캔
+allowed-tools: Bash, Read, Glob, Grep
+---
+
 # Code Review
 
 현재 브랜치의 변경사항을 리뷰합니다.

@@ -494,3 +494,9 @@ bash tests/structure/test-plugin-structure.sh
 
 - 관리자: [comeddy](https://github.com/comeddy)
 - 이슈: [GitHub Issues](https://github.com/comeddy/eks-hybrid-sim/issues)
+
+<!-- harness-eval-badge:start -->
+![Harness Score](https://img.shields.io/badge/harness-6.9%2F10-orange)
+![Harness Grade](https://img.shields.io/badge/grade-C-orange)
+![Last Eval](https://img.shields.io/badge/eval-2026--04--22-blue)
+<!-- harness-eval-badge:end -->

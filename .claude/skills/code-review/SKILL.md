@@ -1,3 +1,9 @@
+---
+name: code-review
+description: Terraform + Helm 코드 리뷰 — fmt, validate, lint, template 실행 후 체크리스트 기반 검토
+output: "Summary, Risk (High/Medium/Low), Issues[], Suggestions[]"
+---
+
 # Code Review Skill
 
 Terraform + Helm 코드 리뷰를 수행합니다.

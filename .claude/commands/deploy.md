@@ -1,3 +1,9 @@
+---
+name: deploy
+description: Terraform 배포 — plan 검토 후 사용자 승인, apply, post-deploy 검증, rollback 지원
+allowed-tools: Bash, Read
+---
+
 # Deploy
 
 Terraform 배포를 실행합니다.

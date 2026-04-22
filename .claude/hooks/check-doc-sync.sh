@@ -4,19 +4,6 @@ set -euo pipefail
 INPUT="${1:-}"
 PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
-check_file_in_dir() {
-  local changed_file="$1"
-  local dir="$changed_file"
-
-  while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
-    dir=$(dirname "$dir")
-    if [ -f "$PROJECT_ROOT/$dir/CLAUDE.md" ]; then
-      return 0
-    fi
-  done
-  return 1
-}
-
 WARNINGS=""
 
 if echo "$INPUT" | grep -q "modules/"; then

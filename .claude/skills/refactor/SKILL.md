@@ -1,3 +1,9 @@
+---
+name: refactor
+description: Terraform 모듈 추출, 변수 통합, Helm values 재구조화 — state mv 안전 절차 포함
+output: "Before/After plan diff, state migration commands, CLAUDE.md updates"
+---
+
 # Refactor Skill
 
 Terraform 모듈 및 Helm 차트 리팩토링을 수행합니다.
